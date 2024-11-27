@@ -3,7 +3,7 @@ import React from "react";
 import { Button, Box } from "@mui/material";
 import { FaUpload } from "react-icons/fa";
 
-const PdfUploader = ({ onFileUpload }) => {
+const PdfUploader = ({ onFileUpload, inputRef }) => {
     const handleFileChange = (e) => {
         if (e.target.files.length) {
             onFileUpload(e.target.files[0]);
@@ -19,7 +19,7 @@ const PdfUploader = ({ onFileUpload }) => {
                 sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '1.2rem' }}
             >
                 העלאת PDF
-                <input type="file" accept="application/pdf" hidden onChange={handleFileChange} />
+                <input type="file" ref={inputRef} accept="application/pdf" hidden onChange={handleFileChange} />
             </Button>
         </Box>
     );

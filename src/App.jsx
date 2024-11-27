@@ -1,5 +1,5 @@
 // App.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Box, Button, Typography } from "@mui/material";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -17,6 +17,9 @@ const App = () => {
   const [pdfBytes, setPdfBytes] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
 
+  // Refs for file inputs
+  const pdfInputRef = useRef(null);
+  const excelInputRef = useRef(null);
 
   const handleFileUpload = (file) => {
     if (file.type !== "application/pdf") {
@@ -37,6 +40,12 @@ const App = () => {
       .catch((error) => {
         console.error(error.message);
         setTotalPages(0);
+      })
+      .finally(() => {
+        // Reset the file input after processing
+        if (pdfInputRef.current) {
+          pdfInputRef.current.value = "";
+        }
       });
   };
 
@@ -59,6 +68,11 @@ const App = () => {
       setSelectedPages((prev) => [...new Set([...prev, ...pagesFromExcel])]); // Merge and deduplicate
     } catch (error) {
       alert(error);
+    } finally {
+      // Reset the file input after processing
+      if (excelInputRef.current) {
+        excelInputRef.current.value = "";
+      }
     }
   };
 
@@ -108,7 +122,7 @@ const App = () => {
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <Navbar />
       <Container sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "25px", gap: "25px" }}>
-        <PdfUploader onFileUpload={handleFileUpload} />
+        <PdfUploader onFileUpload={handleFileUpload} nputRef={pdfInputRef} />
         {pdfFile && (
           <>
             <Button variant="contained" component="label" color="secondary">
@@ -118,6 +132,7 @@ const App = () => {
                 accept=".xlsx, .xls"
                 hidden
                 onChange={(e) => handleExcelUpload(e.target.files[0])}
+                ref={excelInputRef}
               />
             </Button>
             <SelectedPagesPreview selectedPages={selectedPages} />
