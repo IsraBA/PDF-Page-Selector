@@ -1,17 +1,22 @@
 // App.jsx
 import React, { useState, useEffect } from "react";
-import { Container, Box, Button } from "@mui/material";
+import { Container, Box, Button, Typography } from "@mui/material";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PdfUploader from "./components/PdfUploader";
 import PdfViewer from "./components/PdfViewer";
 import PageSelector from "./components/PageSelector";
+import SelectedPagesPreview from "./components/SelectedPagesPreview"; // Preview component
+import { processExcelFile } from "./functions/processExcel"; // Import function
 import { PDFDocument } from "pdf-lib";
+import { getPdfTotalPages } from "./functions/pdfUtils";
 
 const App = () => {
   const [pdfFile, setPdfFile] = useState(null);
   const [selectedPages, setSelectedPages] = useState([]);
   const [pdfBytes, setPdfBytes] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
+
 
   const handleFileUpload = (file) => {
     if (file.type !== "application/pdf") {
@@ -22,6 +27,17 @@ const App = () => {
     setPdfFile(fileUrl);
     setSelectedPages([]);
     setPdfBytes(null);
+
+    // Get total pages using the utility function
+    getPdfTotalPages(file)
+      .then((pages) => {
+        console.log("Total pages in the PDF:", pages);
+        setTotalPages(pages);
+      })
+      .catch((error) => {
+        console.error(error.message);
+        setTotalPages(0);
+      });
   };
 
   const handlePageSelect = (pageNumber) => {
@@ -30,6 +46,20 @@ const App = () => {
         ? prev.filter((page) => page !== pageNumber)
         : [...prev, pageNumber]
     );
+  };
+
+  const handleExcelUpload = async (file) => {
+    if (!totalPages || totalPages <= 0) {
+      alert("יש לטעון קובץ PDF תקין לפני העלאת טבלת Excel.");
+      return;
+    }
+
+    try {
+      const pagesFromExcel = await processExcelFile(file, totalPages);
+      setSelectedPages((prev) => [...new Set([...prev, ...pagesFromExcel])]); // Merge and deduplicate
+    } catch (error) {
+      alert(error);
+    }
   };
 
   const createNewPdf = async () => {
@@ -51,8 +81,10 @@ const App = () => {
   useEffect(() => {
     if (selectedPages.length > 0) {
       createNewPdf();
+    } else {
+      setPdfBytes(null);
     }
-  }, [selectedPages]); // הפעולה תתבצע כל פעם שהעמודים שנבחרו משתנים
+  }, [selectedPages]);
 
   const downloadPdf = () => {
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
@@ -73,12 +105,22 @@ const App = () => {
   }, [pdfFile]);
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <Navbar />
-      <Container sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '25px', gap: '25px' }}>
+      <Container sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "25px", gap: "25px" }}>
         <PdfUploader onFileUpload={handleFileUpload} />
         {pdfFile && (
           <>
+            <Button variant="contained" component="label" color="secondary">
+              בחירת עמודים באמצעות טבלת Excel
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                hidden
+                onChange={(e) => handleExcelUpload(e.target.files[0])}
+              />
+            </Button>
+            <SelectedPagesPreview selectedPages={selectedPages} />
             <PdfViewer
               file={pdfFile}
               onPageSelect={handlePageSelect}

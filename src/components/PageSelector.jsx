@@ -11,7 +11,6 @@ const PageSelector = ({ selectedPages, onDownloadPdf, isDownloadReady }) => (
             color="success"
             startIcon={<FaFileDownload style={{ marginLeft: 10 }} />}
             onClick={onDownloadPdf}
-            sx={{ ml: 2 }}
         >
             הורדת PDF
         </Button>
