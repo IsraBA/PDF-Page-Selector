@@ -80,11 +80,12 @@ const App = () => {
   const createNewPdf = async () => {
     if (!pdfFile || selectedPages.length === 0) return;
 
+    const sortedPages = [...selectedPages].sort((a, b) => a - b); // Sort pages in ascending order
     const existingPdfBytes = await fetch(pdfFile).then((res) => res.arrayBuffer());
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const newPdfDoc = await PDFDocument.create();
 
-    for (const pageNumber of selectedPages) {
+    for (const pageNumber of sortedPages) {
       const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [pageNumber - 1]);
       newPdfDoc.addPage(copiedPage);
     }
@@ -147,15 +148,15 @@ const App = () => {
             </Button>
             <SelectedPagesPreview selectedPages={selectedPages} onRemovePage={handleRemovePage} // Pass the remove function
             />
-            <PdfViewer
-              file={pdfFile}
-              onPageSelect={handlePageSelect}
-              selectedPages={selectedPages}
-            />
             <PageSelector
               selectedPages={selectedPages}
               onDownloadPdf={downloadPdf}
               isDownloadReady={!!pdfBytes}
+            />
+            <PdfViewer
+              file={pdfFile}
+              onPageSelect={handlePageSelect}
+              selectedPages={selectedPages}
             />
           </>
         )}
