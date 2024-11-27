@@ -48,6 +48,12 @@ const App = () => {
     setPdfBytes(newPdfBytes);
   };
 
+  useEffect(() => {
+    if (selectedPages.length > 0) {
+      createNewPdf();
+    }
+  }, [selectedPages]); // הפעולה תתבצע כל פעם שהעמודים שנבחרו משתנים
+
   const downloadPdf = () => {
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
@@ -69,7 +75,7 @@ const App = () => {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
       <Navbar />
-      <Container sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '25px', gap: '25px'}}>
+      <Container sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '25px', gap: '25px' }}>
         <PdfUploader onFileUpload={handleFileUpload} />
         {pdfFile && (
           <>
@@ -80,7 +86,6 @@ const App = () => {
             />
             <PageSelector
               selectedPages={selectedPages}
-              onCreatePdf={createNewPdf}
               onDownloadPdf={downloadPdf}
               isDownloadReady={!!pdfBytes}
             />
