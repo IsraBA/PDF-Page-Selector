@@ -10,6 +10,7 @@ import SelectedPagesPreview from "./components/SelectedPagesPreview"; // Preview
 import { processExcelFile } from "./functions/processExcel"; // Import function
 import { PDFDocument } from "pdf-lib";
 import { getPdfTotalPages } from "./functions/pdfUtils";
+import { HiMiniTableCells } from "react-icons/hi2";
 
 const App = () => {
   const [pdfFile, setPdfFile] = useState(null);
@@ -118,6 +119,10 @@ const App = () => {
     };
   }, [pdfFile]);
 
+  const handleRemovePage = (page) => {
+    setSelectedPages((prev) => prev.filter((p) => p !== page));
+  };
+
   return (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <Navbar />
@@ -125,7 +130,12 @@ const App = () => {
         <PdfUploader onFileUpload={handleFileUpload} nputRef={pdfInputRef} />
         {pdfFile && (
           <>
-            <Button variant="contained" component="label" color="secondary">
+            <Button
+              variant="contained"
+              component="label"
+              color="secondary"
+              startIcon={<HiMiniTableCells style={{ marginLeft: 12 }} />}
+            >
               בחירת עמודים באמצעות טבלת Excel
               <input
                 type="file"
@@ -135,7 +145,8 @@ const App = () => {
                 ref={excelInputRef}
               />
             </Button>
-            <SelectedPagesPreview selectedPages={selectedPages} />
+            <SelectedPagesPreview selectedPages={selectedPages} onRemovePage={handleRemovePage} // Pass the remove function
+            />
             <PdfViewer
               file={pdfFile}
               onPageSelect={handlePageSelect}
